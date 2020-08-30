@@ -42,6 +42,9 @@ func (c *Config) MakeCSRFToken(input, suffix string) string {
 
 // ReadGoogleCredentials reads the credentials file.
 func (c *Config) ReadGoogleCredentials() []byte {
+	if c.GoogleApplicationCredentials == "" {
+		log.Fatalf(lg.FatalGACEmpty)
+	}
 	file, err := ioutil.ReadFile(c.GoogleApplicationCredentials)
 	if err != nil {
 		log.Fatalf(lg.FatalGACParse, err)

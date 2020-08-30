@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 
 	"server-googleapi/lg"
 	"server-googleapi/server"
@@ -26,19 +28,33 @@ func main() {
 
 	tpl.Load(wd)
 	config := prepConfig(conf)
+	prepLog(config)
+
 	if gac != "" {
 		// If file is specified via a flag, override the configuration setting.
 		config.GoogleApplicationCredentials = gac
 	}
+
 	s := server.NewServer(config)
+	// TODO Change the configuration property to another one.
+	s.Ready = isGoogleCredentialsAvail(config.GoogleApplicationCredentials)
 	s.MakeRouter(false)
 	runServer(s)
+}
+
+func isGoogleCredentialsAvail(gacPath string) bool {
+	info, err := os.Stat(gacPath)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func parseFlags() (conf, gac, wd string) {
 	flag.StringVar(&conf, "conf", ConfigFilePath, "Reads the configuration file for server. Default is 'config/web.yaml'")
 	flag.StringVar(&gac, "gac", "", "Reads the Google application credentials file for accessing protected resources.")
 	flag.StringVar(&wd, "wd", ".", "Sets the working directory for unit tests.")
+	flag.Parse()
 	return
 }
 
@@ -54,6 +70,23 @@ func prepConfig(configPath string) server.Config {
 		log.Fatalf(lg.FatalConfigParse, err)
 	}
 	return cfg
+}
+
+func prepLog(cfg server.Config) {
+	filename := cfg.LogFolder + "/" + LogFilename
+	if strings.HasSuffix(cfg.LogFolder, "/") {
+		filename = cfg.LogFolder + LogFilename
+	}
+	lg.Init(filename, cfg.LogLevel)
+}
+
+// redirectHTTP returns a handler that performs a HTTP redirection to the
+// secure port.
+func redirectHTTP(port string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h := strings.Split(r.Host, ":")
+		http.Redirect(w, r, fmt.Sprintf("https://%v:%v%v", h[0], port, r.RequestURI), http.StatusPermanentRedirect)
+	}
 }
 
 func runServer(s *server.Server) error {

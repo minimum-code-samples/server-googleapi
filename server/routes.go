@@ -18,6 +18,13 @@ type webpage struct {
 }
 
 func routePages(s *Server, useMiddleware bool) {
+	pages[model.PathError] = &webpage{
+		Title:       "Error",
+		Description: model.PageDescription,
+		Path:        model.PathError,
+		Fn:          s.pageError(),
+		Template:    "templates/web/error.html",
+	}
 	pages[model.PathIndex] = &webpage{
 		Title:       "Home",
 		Description: model.PageDescription,

@@ -7,11 +7,16 @@
   <body>
     <h1>Sample Server</h1>
     <div>
-{{ if .urlSignin }}
-      <a href="{{ .urlSignin }}">Sign in</a>
+{{ if .HasReadyCredentials }}
+      Server is ready.
 {{ end }}
-{{ if .urlSignout }}
-      <a href="{{ .urlSignout }}">Sign out</a>
+{{ if not .HasReadyCredentials }}
+      Server is not ready.
+{{ end }}
+{{ if .UrlUserSignin }}
+      <p>
+        <a href="{{ .UrlUserSignin }}">Sign in</a>
+      </p>
 {{ end }}
     </div>
   </body>

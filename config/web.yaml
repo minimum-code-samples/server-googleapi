@@ -2,7 +2,7 @@
 csrf_key: averysecretkey
 
 # The path to GoogleApplicationCredentials file.
-google_application_credentials: 
+google_application_credentials: secrets/client_secret_1055532975349-enqf7slh6laaadbgc4fen95a3m554stu.apps.googleusercontent.com.json
 
 # The folder to put the log files in. The trailing slash is optional.
 log_folder: logs
