@@ -1,0 +1,17 @@
+# The key to create CSRF tokens.
+csrf_key: averysecretkey
+
+# The path to GoogleApplicationCredentials file.
+google_application_credentials: 
+
+# The folder to put the log files in. The trailing slash is optional.
+log_folder: logs
+# The lowest level of logging to be placed in the log files.
+# All logs are sent to STDOUT regardless of this setting.
+# Acceptable values according to priority are: ERROR, WARNING, INFO, DEBUG
+# Default is ERROR.
+log_level: INFO
+
+# The interface and port that the server will run on.
+interface: 0.0.0.0
+port: 8080

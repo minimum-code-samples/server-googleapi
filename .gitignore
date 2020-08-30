@@ -1,0 +1,11 @@
+.commit.md
+.settings
+.project
+*~
+*swp
+/bin
+/target
+_site
+client_secret_*\.json
+cs_*\.json
+logs/
