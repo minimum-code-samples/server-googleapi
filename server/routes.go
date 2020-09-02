@@ -32,6 +32,11 @@ func routePages(s *Server, useMiddleware bool) {
 		Fn:          s.pageIndex(),
 		Template:    "templates/web/index.html",
 	}
+	pages[model.PathOpenIDCB] = &webpage{
+		Title: "Oauth callback",
+		Path:  model.PathOpenIDCB,
+		Fn:    s.PageOpenIDCB(),
+	}
 
 	for _, p := range pages {
 		fn := p.Fn

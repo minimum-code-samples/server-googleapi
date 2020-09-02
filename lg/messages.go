@@ -1,6 +1,14 @@
 package lg
 
 const (
+	// CriticalOauthConfig logs when the `MakeConfig` function returns an error. It is critical because the system will not be able to perform its expected function but does not crash it.
+	CriticalOauthConfig = "Unable to make Oauth config: %s"
+	// CriticalOauthDecode logs when decoding the JWT from the token fails.
+	CriticalOauthDecode = "Unable to decode user info from Oauth token: %s"
+	// CriticalOauthExchange logs when the Oauth exchange process fails.
+	CriticalOauthExchange = "Unable to complete the Oauth token exchange process: %s"
+	// CriticalTokenMarshal logs when marshalling of the token to JSON fails.
+	CriticalTokenMarshal = "JSON marshal of token failed: %s"
 	// FatalConfigParse logs when the config file cannot be parsed.
 	FatalConfigParse = "Unable to parse config file:\n%s\n"
 	// FatalGACEmpty logs when the configuration property is empty and not specified via a command-line flag.

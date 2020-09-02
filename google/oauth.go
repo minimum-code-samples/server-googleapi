@@ -1,9 +1,63 @@
 package google
 
 import (
+	"context"
+
+	oidc "github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/classroom/v1"
+	"google.golang.org/api/sheets/v4"
 )
+
+const (
+	openIDIssuer = "https://accounts.google.com"
+)
+
+// UserDetail holds the detailed information from the UserInfo provider.
+type UserDetail struct {
+	Sub           string `json:"sub"`
+	Name          string `json:"name"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Profile       string `json:"profile"`
+	Picture       string `json:"picture"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	Gender        string `json:"gender"`
+	Locale        string `json:"locale"`
+	HD            string `json:"hd"`
+}
+
+// DeriveUserInfo retrieves the user information using the supplied token.
+//
+// This is part of the OpenID Connect "server flow".
+func DeriveUserInfo(ctx context.Context, token *oauth2.Token) (userInfo *oidc.UserInfo, userDetail *UserDetail, err error) {
+	userDetail = new(UserDetail)
+	provider, err := oidc.NewProvider(ctx, openIDIssuer)
+	if err != nil {
+		return
+	}
+	userInfo, err = provider.UserInfo(ctx, oauth2.StaticTokenSource(token))
+	if err != nil {
+		return
+	}
+
+	if err = userInfo.Claims(userDetail); err != nil {
+		return
+	}
+	return
+}
+
+// ScopesWithClassroom creates the scopes with the necessary Classroom scopes added.
+func ScopesWithClassroom() []string {
+	return []string{"profile", "email", classroom.ClassroomCoursesReadonlyScope}
+}
+
+// ScopesWithSheets creates the scopes along with readonly access to Google Sheets.
+func ScopesWithSheets() []string {
+	return []string{"profile", "email", sheets.SpreadsheetsReadonlyScope}
+}
 
 // MakeConfig creates the configuration object with the necessary client information to perform a token exchange.
 func MakeConfig(file []byte, scopes []string) (*oauth2.Config, error) {
