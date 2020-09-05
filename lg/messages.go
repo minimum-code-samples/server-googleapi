@@ -9,10 +9,14 @@ const (
 	CriticalOauthExchange = "Unable to complete the Oauth token exchange process: %s"
 	// CriticalTokenMarshal logs when marshalling of the token to JSON fails.
 	CriticalTokenMarshal = "JSON marshal of token failed: %s"
+	// CriticalTokenSave logs when saving of the token fails.
+	CriticalTokenSave = "Unable to save token: %s"
 	// FatalConfigParse logs when the config file cannot be parsed.
 	FatalConfigParse = "Unable to parse config file:\n%s\n"
 	// FatalGACEmpty logs when the configuration property is empty and not specified via a command-line flag.
 	FatalGACEmpty = "'google_application_credentials' not specified."
+	// FatalGATEmpty logs when the configuration property is empty.
+	FatalGATEmpty = "'google_admin_token' not specified."
 	// FatalGACParse logs when the GAC
 	FatalGACParse = "Unable to parse GOOGLE_APPLICATIONS_FILE:\n%s\n"
 	// ServerInit logs when the server is starting.

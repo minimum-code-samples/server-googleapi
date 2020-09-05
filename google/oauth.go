@@ -2,6 +2,8 @@ package google
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 
 	oidc "github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
@@ -47,6 +49,17 @@ func DeriveUserInfo(ctx context.Context, token *oauth2.Token) (userInfo *oidc.Us
 		return
 	}
 	return
+}
+
+// SaveTokenAsFile saves the token into the filesystem.
+func SaveTokenAsFile(path string, token *oauth2.Token) error {
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	json.NewEncoder(f).Encode(token)
+	return nil
 }
 
 // ScopesWithClassroom creates the scopes with the necessary Classroom scopes added.

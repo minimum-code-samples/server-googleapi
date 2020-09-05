@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 	"server-googleapi/google"
 	"server-googleapi/lg"
@@ -10,6 +9,14 @@ import (
 
 	"golang.org/x/oauth2"
 )
+
+func (s *Server) pageDashboard() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := "dashboard"
+		d := make(map[string]interface{})
+		tpl.Render(w, name, d)
+	}
+}
 
 func (s *Server) pageError() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +50,7 @@ func (s *Server) pageIndex() http.HandlerFunc {
 		}
 		if err != nil {
 			lg.Error(lg.CriticalOauthConfig, err)
-			http.Redirect(w, r, "/error?msg="+model.ErrorOauthConstruction, http.StatusTemporaryRedirect)
+			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorOauthConstruction, http.StatusTemporaryRedirect)
 			// If StatusInternalServerError, shows an ugly "Internal Server Error" page.
 			return
 		}
@@ -52,8 +59,16 @@ func (s *Server) pageIndex() http.HandlerFunc {
 	}
 }
 
+func (s *Server) pageInitAdmin() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := "init-admin"
+		d := make(map[string]interface{})
+		tpl.Render(w, name, d)
+	}
+}
+
 // PageOpenIDCB is the handler for "/openidcb" to handle the OpenID callback.
-func (s *Server) PageOpenIDCB() http.HandlerFunc {
+func (s *Server) pageOpenIDCB() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		queries := r.URL.Query()
@@ -74,13 +89,13 @@ func (s *Server) PageOpenIDCB() http.HandlerFunc {
 		}
 		if err != nil {
 			lg.Error(lg.CriticalOauthConfig, err)
-			http.Redirect(w, r, "/error?msg="+model.ErrorConfigConstruction, http.StatusTemporaryRedirect)
+			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorConfigConstruction, http.StatusTemporaryRedirect)
 			return
 		}
 		token, err := cfg.Exchange(ctx, code)
 		if err != nil {
 			lg.Error(lg.CriticalOauthExchange, err)
-			http.Redirect(w, r, "/error?msg="+model.ErrorOauthExchange, http.StatusTemporaryRedirect)
+			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorOauthExchange, http.StatusTemporaryRedirect)
 			return
 		}
 		lg.Debug("Access token:\n  %v\n", token.AccessToken)
@@ -93,17 +108,24 @@ func (s *Server) PageOpenIDCB() http.HandlerFunc {
 		_, userDetail, err := google.DeriveUserInfo(ctx, token)
 		if err != nil {
 			lg.Error(lg.CriticalOauthDecode, err)
-			http.Redirect(w, r, "/error?msg="+model.ErrorJWTDecode, http.StatusTemporaryRedirect)
+			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorJWTDecode, http.StatusTemporaryRedirect)
 			return
 		}
 		lg.Debug("Name:\n  %v\n", userDetail.Name)
 		lg.Debug("Email:\n  %v\n", userDetail.Email)
 
 		// Store the refresh token for the admin account.
-		tokenJSON, err := json.Marshal(token)
-		if err != nil {
-			lg.Error(lg.CriticalTokenMarshal, err)
+		if err = google.SaveTokenAsFile(s.config.GoogleAdminToken, token); err != nil {
+			lg.Error(lg.CriticalTokenSave, err)
+			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorTokenSave, http.StatusTemporaryRedirect)
 		}
-		lg.Debug("AccessToken: %s", tokenJSON)
+		// TODO Check state to determine redirect destination.
+		if state != "" {
+			http.Redirect(w, r, model.PathInitAdmin, http.StatusTemporaryRedirect)
+			return
+		} else {
+			http.Redirect(w, r, model.PathDashboard, http.StatusTemporaryRedirect)
+			return
+		}
 	}
 }

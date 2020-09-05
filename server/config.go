@@ -12,6 +12,10 @@ import (
 type Config struct {
 	// The key to create CSRF tokens.
 	CSRFKey string `yaml:"csrf_key"`
+	// The token for admin access.
+	GoogleAdminToken string `yaml:"google_admin_token"`
+	// The path to the file containing Google Oauth client credentials.
+	GoogleApplicationCredentials string `yaml:"google_application_credentials"`
 	// The interface that the server is listening on.
 	Interface string `yaml:"interface"`
 	// The folder where the logs are placed in.
@@ -20,8 +24,6 @@ type Config struct {
 	//
 	// Regardless of the level, all log statements are sent to STDOUT.
 	LogLevel string `yaml:"log_level"`
-	// The Google Oauth client credentials.
-	GoogleApplicationCredentials string `yaml:"google_application_credentials"`
 	// The port that the server will run on.
 	Port string `yaml:"port"`
 }
@@ -43,7 +45,7 @@ func (c *Config) MakeCSRFToken(input, suffix string) string {
 // ReadGoogleCredentials reads the credentials file.
 func (c *Config) ReadGoogleCredentials() []byte {
 	if c.GoogleApplicationCredentials == "" {
-		log.Fatalf(lg.FatalGACEmpty)
+		log.Fatal(lg.FatalGACEmpty)
 	}
 	file, err := ioutil.ReadFile(c.GoogleApplicationCredentials)
 	if err != nil {

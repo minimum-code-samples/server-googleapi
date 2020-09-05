@@ -36,13 +36,28 @@ func main() {
 	}
 
 	s := server.NewServer(config)
-	// TODO Change the configuration property to another one.
-	s.Ready = isGoogleCredentialsAvail(config.GoogleApplicationCredentials)
+	if config.GoogleApplicationCredentials == "" || !isGoogleCredentialsAvail(config.GoogleApplicationCredentials) {
+		log.Fatal(lg.FatalGACEmpty)
+	}
+	if config.GoogleAdminToken == "" {
+		log.Fatal(lg.FatalGATEmpty)
+	}
+	if isGoogleTokenAvail(config.GoogleAdminToken) {
+		s.Ready = true
+	}
 	s.MakeRouter(false)
 	runServer(s)
 }
 
 func isGoogleCredentialsAvail(gacPath string) bool {
+	info, err := os.Stat(gacPath)
+	if err != nil {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func isGoogleTokenAvail(gacPath string) bool {
 	info, err := os.Stat(gacPath)
 	if err != nil {
 		return false

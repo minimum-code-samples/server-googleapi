@@ -6,6 +6,6 @@
 /bin
 /target
 _site
-client_secret_*\.json
+secrets/
 cs_*\.json
 logs/
