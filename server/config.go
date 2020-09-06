@@ -26,6 +26,14 @@ type Config struct {
 	LogLevel string `yaml:"log_level"`
 	// The port that the server will run on.
 	Port string `yaml:"port"`
+	// The authentication key. Required.
+	SessionAuthKey string `yaml:"session_auth_key"`
+	// The number of minutes that the session is valid for.
+	SessionDuration int `yaml:"session_duration"`
+	// The encryption key to obfuscate the cookie values. Optional.
+	SessionEncKey string `yaml:"session_enc_key"`
+	// Whether to serve secure sessions only.
+	SessionSecure bool `yaml:"session_secure_only"`
 }
 
 // MakeCSRFToken creates a CSRF token based on the `input` and an optional `suffix`.

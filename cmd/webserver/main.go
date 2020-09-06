@@ -13,6 +13,7 @@ import (
 	"server-googleapi/server"
 	"server-googleapi/tpl"
 
+	"github.com/gorilla/sessions"
 	"gopkg.in/yaml.v2"
 )
 
@@ -35,13 +36,18 @@ func main() {
 		config.GoogleApplicationCredentials = gac
 	}
 
-	s := server.NewServer(config)
-	if config.GoogleApplicationCredentials == "" || !isGoogleCredentialsAvail(config.GoogleApplicationCredentials) {
-		log.Fatal(lg.FatalGACEmpty)
-	}
 	if config.GoogleAdminToken == "" {
 		log.Fatal(lg.FatalGATEmpty)
 	}
+	if config.SessionAuthKey == "" {
+		log.Fatal(lg.FatalSessionKeyEmpty)
+	}
+	if config.GoogleApplicationCredentials == "" || !isGoogleCredentialsAvail(config.GoogleApplicationCredentials) {
+		log.Fatal(lg.FatalGACEmpty)
+	}
+
+	store := prepSessionStore(config.SessionAuthKey, config.SessionEncKey, config.SessionSecure, config.SessionDuration)
+	s := server.NewServer(config, store)
 	if isGoogleTokenAvail(config.GoogleAdminToken) {
 		s.Ready = true
 	}
@@ -93,6 +99,23 @@ func prepLog(cfg server.Config) {
 		filename = cfg.LogFolder + LogFilename
 	}
 	lg.Init(filename, cfg.LogLevel)
+}
+
+func prepSessionStore(authKey, encKey string, secureOnly bool, age int) *sessions.CookieStore {
+	var store *sessions.CookieStore
+	if encKey == "" {
+		// No encryption key supplied.
+		store = sessions.NewCookieStore([]byte(authKey))
+	} else {
+		store = sessions.NewCookieStore([]byte(authKey), []byte(encKey))
+	}
+	store.Options = &sessions.Options{
+		Path:     "/",
+		Secure:   secureOnly,
+		HttpOnly: true,
+	}
+	store.MaxAge(age * 60)
+	return store
 }
 
 // redirectHTTP returns a handler that performs a HTTP redirection to the

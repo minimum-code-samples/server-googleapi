@@ -19,6 +19,8 @@ const (
 	FatalGATEmpty = "'google_admin_token' not specified."
 	// FatalGACParse logs when the GAC
 	FatalGACParse = "Unable to parse GOOGLE_APPLICATIONS_FILE:\n%s\n"
+	// FatalSessionKeyEmpty logs when the authentication key to the cookie is not set.
+	FatalSessionKeyEmpty = "Authentication key for cookie must be present."
 	// ServerInit logs when the server is starting.
 	ServerInit = "Initializing server on %s:%s"
 	// ServerInitSecure logs when the server is starting on two ports.

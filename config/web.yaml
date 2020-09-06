@@ -17,3 +17,9 @@ log_level: INFO
 # The interface and port that the server will run on.
 interface: 0.0.0.0
 port: 8080
+
+# Session configuration parameters
+session_auth_key: prefertouseenvironmentvariable
+session_duration: 60 # in minutes
+session_enc_key:
+session_secure: false

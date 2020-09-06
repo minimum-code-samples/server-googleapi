@@ -43,7 +43,7 @@ func routePages(s *Server, useMiddleware bool) {
 		Title:       "Initialization",
 		Description: model.PageDescription,
 		Path:        model.PathInitAdmin,
-		Fn:          s.pageDashboard(),
+		Fn:          s.pageInitAdmin(),
 		Template:    "templates/web/init-admin.html",
 	}
 	pages[model.PathOpenIDCB] = &webpage{

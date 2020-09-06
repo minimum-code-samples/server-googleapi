@@ -3,9 +3,9 @@ module server-googleapi
 go 1.14
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/sessions v1.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pquerna/cachecontrol v0.0.0-20200819021114-67c6ae64274f // indirect
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect

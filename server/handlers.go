@@ -38,23 +38,26 @@ func (s *Server) pageIndex() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := "index"
 		d := make(map[string]interface{})
-		d["HasReadyCredentials"] = s.Ready
-		var (
-			cfg *oauth2.Config
-			err error
-		)
-		if !s.Ready {
-			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
+		if s.IsAuth(r) {
+			d["Authed"] = true
 		} else {
-			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
+			d["HasReadyCredentials"] = s.Ready
+			var (
+				cfg *oauth2.Config
+				err error
+			)
+			if !s.Ready {
+				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
+			} else {
+				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
+			}
+			if err != nil {
+				lg.Error(lg.CriticalOauthConfig, err)
+				s.RedirectError(w, r, model.ErrorOauthConstruction)
+				return
+			}
+			d["UrlUserSignin"] = google.MakeLinkOnline(cfg, "csrf")
 		}
-		if err != nil {
-			lg.Error(lg.CriticalOauthConfig, err)
-			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorOauthConstruction, http.StatusTemporaryRedirect)
-			// If StatusInternalServerError, shows an ugly "Internal Server Error" page.
-			return
-		}
-		d["UrlUserSignin"] = google.MakeLinkOnline(cfg, "csrf")
 		tpl.Render(w, name, d)
 	}
 }
@@ -89,13 +92,13 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		}
 		if err != nil {
 			lg.Error(lg.CriticalOauthConfig, err)
-			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorConfigConstruction, http.StatusTemporaryRedirect)
+			s.RedirectError(w, r, model.ErrorConfigConstruction)
 			return
 		}
 		token, err := cfg.Exchange(ctx, code)
 		if err != nil {
 			lg.Error(lg.CriticalOauthExchange, err)
-			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorOauthExchange, http.StatusTemporaryRedirect)
+			s.RedirectError(w, r, model.ErrorOauthExchange)
 			return
 		}
 		lg.Debug("Access token:\n  %v\n", token.AccessToken)
@@ -108,17 +111,25 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		_, userDetail, err := google.DeriveUserInfo(ctx, token)
 		if err != nil {
 			lg.Error(lg.CriticalOauthDecode, err)
-			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorJWTDecode, http.StatusTemporaryRedirect)
+			s.RedirectError(w, r, model.ErrorJWTDecode)
 			return
 		}
 		lg.Debug("Name:\n  %v\n", userDetail.Name)
 		lg.Debug("Email:\n  %v\n", userDetail.Email)
 
 		// Store the refresh token for the admin account.
-		if err = google.SaveTokenAsFile(s.config.GoogleAdminToken, token); err != nil {
-			lg.Error(lg.CriticalTokenSave, err)
-			http.Redirect(w, r, model.PathError+"?msg="+model.ErrorTokenSave, http.StatusTemporaryRedirect)
+		if token.RefreshToken != "" {
+			if err = google.SaveTokenAsFile(s.config.GoogleAdminToken, token); err != nil {
+				lg.Error(lg.CriticalTokenSave, err)
+				s.RedirectError(w, r, model.ErrorTokenSave)
+			}
 		}
+
+		// Store in session.
+		if !s.Auth(userDetail, w, r) {
+			return // Redirection already done in Auth().
+		}
+
 		// TODO Check state to determine redirect destination.
 		if state != "" {
 			http.Redirect(w, r, model.PathInitAdmin, http.StatusTemporaryRedirect)
