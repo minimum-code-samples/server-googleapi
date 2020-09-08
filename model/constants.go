@@ -29,6 +29,9 @@ const (
 	//
 	// If this needs to be changed, the URI in the Client ID setting (https://console.cloud.google.com/apis/credentials) needs to be updated correspondingly.
 	PathOpenIDCB = "/openidcb"
+	// PathVerifySpreadsheet is a temporary endpoint.
+	// TODO Change this.
+	PathVerifySpreadsheet = "/verify-spreadsheet"
 	// SessName is the session variable for the user's name.
 	SessName = "name"
 	// SessionName is the name of the session.

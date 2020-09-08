@@ -1,0 +1,26 @@
+{{define "verify-spreadsheet"}}
+<!DOCTYPE html>
+<html>
+  <head>
+    {{template "head" .}}
+  </head>
+  <body>
+    <h1>Verify reading of spreadsheet</h1>
+
+    <p>
+      Test
+    </p>
+{{ if .Error }}
+    <p>{{ .Error }}</p>
+{{ else }}
+    <ul>
+      {{ range .Titles }}
+        <li>
+          {{ . }}
+        </li>
+      {{ end }}
+    </ul>
+{{ end }}
+  </body>
+</html>
+{{end}}

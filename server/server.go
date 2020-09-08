@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"golang.org/x/oauth2"
 )
 
 // Server holds the shared dependencies for the Web server.
@@ -17,12 +18,12 @@ type Server struct {
 	Port string
 	// The port that the server listens on for TLS connections.
 	PortTLS string
-	// Whether the server has been bootstrapped successfully.
-	Ready bool
 	// The router.
 	Router *mux.Router
 	// The session store.
 	SessStore sessions.Store
+	// The token for the admin.
+	TokenAdmin *oauth2.Token
 	// The Config instance.
 	config Config
 }
@@ -32,7 +33,6 @@ func NewServer(cfg Config, store sessions.Store) *Server {
 	return &Server{
 		Interface: cfg.Interface,
 		Port:      cfg.Port,
-		Ready:     false,
 		Router:    nil,
 		SessStore: store,
 		config:    cfg,

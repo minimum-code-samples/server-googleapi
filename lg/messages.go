@@ -21,6 +21,8 @@ const (
 	FatalGACParse = "Unable to parse GOOGLE_APPLICATIONS_FILE:\n%s\n"
 	// FatalSessionKeyEmpty logs when the authentication key to the cookie is not set.
 	FatalSessionKeyEmpty = "Authentication key for cookie must be present."
+	// FatalTokenFileCorrupt logs when the file containing the token is not valid.
+	FatalTokenFileCorrupt = "File containing admin token is valid or corrupted. Remove or replace with a valid one."
 	// ServerInit logs when the server is starting.
 	ServerInit = "Initializing server on %s:%s"
 	// ServerInitSecure logs when the server is starting on two ports.

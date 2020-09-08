@@ -51,6 +51,20 @@ func DeriveUserInfo(ctx context.Context, token *oauth2.Token) (userInfo *oidc.Us
 	return
 }
 
+// ReadTokenFromFile reads the token stored in the file.
+//
+// Note that a non-nil Token may be returned along with an error, but the Token will be empty.
+func ReadTokenFromFile(path string) (*oauth2.Token, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
+	return tok, err
+}
+
 // SaveTokenAsFile saves the token into the filesystem.
 func SaveTokenAsFile(path string, token *oauth2.Token) error {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)

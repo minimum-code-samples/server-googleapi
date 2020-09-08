@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"server-googleapi/google"
 	"server-googleapi/lg"
@@ -41,12 +42,13 @@ func (s *Server) pageIndex() http.HandlerFunc {
 		if s.IsAuth(r) {
 			d["Authed"] = true
 		} else {
-			d["HasReadyCredentials"] = s.Ready
+			d["HasReadyCredentials"] = s.TokenAdmin != nil
 			var (
 				cfg *oauth2.Config
 				err error
 			)
-			if !s.Ready {
+			if s.TokenAdmin == nil {
+				// Create request for a new refresh token.
 				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
 			} else {
 				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
@@ -56,7 +58,11 @@ func (s *Server) pageIndex() http.HandlerFunc {
 				s.RedirectError(w, r, model.ErrorOauthConstruction)
 				return
 			}
-			d["UrlUserSignin"] = google.MakeLinkOnline(cfg, "csrf")
+			if s.TokenAdmin == nil {
+				d["UrlUserSignin"] = google.MakeLinkOffline(cfg, "csrf")
+			} else {
+				d["UrlUserSignin"] = google.MakeLinkOnline(cfg, "csrf")
+			}
 		}
 		tpl.Render(w, name, d)
 	}
@@ -88,7 +94,6 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		} else {
 			// Handle as "normal" user.
 			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
-
 		}
 		if err != nil {
 			lg.Error(lg.CriticalOauthConfig, err)
@@ -134,9 +139,26 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		if state != "" {
 			http.Redirect(w, r, model.PathInitAdmin, http.StatusTemporaryRedirect)
 			return
-		} else {
-			http.Redirect(w, r, model.PathDashboard, http.StatusTemporaryRedirect)
-			return
 		}
+		http.Redirect(w, r, model.PathDashboard, http.StatusTemporaryRedirect)
+		return
+	}
+}
+
+func (s *Server) pageVerifySpreadsheet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		name := "verify-spreadsheet"
+		d := make(map[string]interface{})
+		creds := s.config.ReadGoogleCredentials()
+		spreadsheet := "1Mt2AQLBUfZ9ZAmCBP-6X3aFx3RJ5rUmor02iHVI64sU"
+		fmt.Printf("- TokenAdmin: %v\n", s.TokenAdmin)
+		if sheeds, err := google.RetrieveSpreadsheetSheets(ctx, spreadsheet, creds, s.TokenAdmin); err != nil {
+			d["Error"] = err.Error()
+		} else {
+			d["Titles"] = google.ReadSheetsTitles(sheeds)
+		}
+
+		tpl.Render(w, name, d)
 	}
 }

@@ -14,8 +14,10 @@
 {{ else }}
   {{ if .HasReadyCredentials }}
       Server is ready.
-  {{ end }}
-  {{ if not .HasReadyCredentials }}
+      <p>
+        <a href="/verify-spreadsheet">Verify spreadsheet</a>
+      </p>
+  {{ else }}
       Server is not ready.
   {{ end }}
   {{ if .UrlUserSignin }}

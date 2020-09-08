@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"server-googleapi/google"
 	"server-googleapi/lg"
 	"server-googleapi/server"
 	"server-googleapi/tpl"
@@ -49,7 +50,11 @@ func main() {
 	store := prepSessionStore(config.SessionAuthKey, config.SessionEncKey, config.SessionSecure, config.SessionDuration)
 	s := server.NewServer(config, store)
 	if isGoogleTokenAvail(config.GoogleAdminToken) {
-		s.Ready = true
+		tok, err := google.ReadTokenFromFile(config.GoogleAdminToken)
+		if err != nil {
+			log.Fatal(lg.FatalTokenFileCorrupt)
+		}
+		s.TokenAdmin = tok
 	}
 	s.MakeRouter(false)
 	runServer(s)

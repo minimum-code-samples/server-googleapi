@@ -14,7 +14,6 @@ type webpage struct {
 	Description string
 	Path        string
 	Fn          http.HandlerFunc
-	Template    string
 }
 
 func routePages(s *Server, useMiddleware bool) {
@@ -23,33 +22,34 @@ func routePages(s *Server, useMiddleware bool) {
 		Description: model.PageDescription,
 		Path:        model.PathDashboard,
 		Fn:          s.pageDashboard(),
-		Template:    "templates/web/dashboard.html",
 	}
 	pages[model.PathError] = &webpage{
 		Title:       "Error",
 		Description: model.PageDescription,
 		Path:        model.PathError,
 		Fn:          s.pageError(),
-		Template:    "templates/web/error.html",
 	}
 	pages[model.PathIndex] = &webpage{
 		Title:       "Home",
 		Description: model.PageDescription,
 		Path:        model.PathIndex,
 		Fn:          s.pageIndex(),
-		Template:    "templates/web/index.html",
 	}
 	pages[model.PathInitAdmin] = &webpage{
 		Title:       "Initialization",
 		Description: model.PageDescription,
 		Path:        model.PathInitAdmin,
 		Fn:          s.pageInitAdmin(),
-		Template:    "templates/web/init-admin.html",
 	}
 	pages[model.PathOpenIDCB] = &webpage{
 		Title: "Oauth callback",
 		Path:  model.PathOpenIDCB,
 		Fn:    s.pageOpenIDCB(),
+	}
+	pages[model.PathVerifySpreadsheet] = &webpage{
+		Title: "Test reading of spreadsheet",
+		Path:  model.PathVerifySpreadsheet,
+		Fn:    s.pageVerifySpreadsheet(),
 	}
 
 	for _, p := range pages {
