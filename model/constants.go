@@ -13,6 +13,8 @@ const (
 	ErrorSessionError = "An occurred for the session. Please contact the system administrator."
 	// ErrorSessionSave logs when saving data to the session results in an error.
 	ErrorSessionSave = "Unable to save to session: %s"
+	// ErrorSessionToken logs when the token cannot be retrieved from the session cookie.
+	ErrorSessionToken = "Corrupted/missing token in session."
 	// ErrorTokenSave is the error message when the saving of the token fails.
 	ErrorTokenSave = "Failed to complete server initialization."
 	// PathDashboard is the user start page.
@@ -29,11 +31,16 @@ const (
 	//
 	// If this needs to be changed, the URI in the Client ID setting (https://console.cloud.google.com/apis/credentials) needs to be updated correspondingly.
 	PathOpenIDCB = "/openidcb"
+	// PathVerifyClassroom is a temporary endpoint.
+	// TODO Change this.
+	PathVerifyClassroom = "/verify-classroom"
 	// PathVerifySpreadsheet is a temporary endpoint.
 	// TODO Change this.
 	PathVerifySpreadsheet = "/verify-spreadsheet"
 	// SessName is the session variable for the user's name.
 	SessName = "name"
+	// SessToken is the session variable for the user's access token.
+	SessToken = "token"
 	// SessionName is the name of the session.
 	SessionName = "minserver"
 )

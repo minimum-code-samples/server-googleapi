@@ -20,9 +20,9 @@ func ReadSheetsTitles(ss []*sheets.Sheet) []string {
 	return titles
 }
 
-// RetrieveSpreadsheetSheets gets the data pertaining to the sheets in a particular spreadsheet.
-func RetrieveSpreadsheetSheets(ctx context.Context, spreadsheetID string, credentials []byte, token *oauth2.Token) ([]*sheets.Sheet, error) {
-	srv, err := makeService(ctx, credentials, token)
+// FetchSpreadsheetSheets gets the data pertaining to the sheets in a particular spreadsheet.
+func FetchSpreadsheetSheets(ctx context.Context, spreadsheetID string, credentials []byte, token *oauth2.Token) ([]*sheets.Sheet, error) {
+	srv, err := makeSheetsService(ctx, credentials, token)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func RetrieveSpreadsheetSheets(ctx context.Context, spreadsheetID string, creden
 	return resp.Sheets, nil
 }
 
-func makeService(ctx context.Context, credentials []byte, token *oauth2.Token) (*sheets.Service, error) {
+func makeSheetsService(ctx context.Context, credentials []byte, token *oauth2.Token) (*sheets.Service, error) {
 	cfg, err := MakeConfig(credentials, ScopesWithSheets())
 	if err != nil {
 		return nil, err

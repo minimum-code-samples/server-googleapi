@@ -46,6 +46,11 @@ func routePages(s *Server, useMiddleware bool) {
 		Path:  model.PathOpenIDCB,
 		Fn:    s.pageOpenIDCB(),
 	}
+	pages[model.PathVerifyClassroom] = &webpage{
+		Title: "Test reading of classrooms",
+		Path:  model.PathVerifyClassroom,
+		Fn:    s.pageVerifyClassroom(),
+	}
 	pages[model.PathVerifySpreadsheet] = &webpage{
 		Title: "Test reading of spreadsheet",
 		Path:  model.PathVerifySpreadsheet,

@@ -131,8 +131,16 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		}
 
 		// Store in session.
-		if !s.Auth(userDetail, w, r) {
-			return // Redirection already done in Auth().
+		if token.RefreshToken == "" {
+			// Store access token in session cookie as well.
+			if !s.AuthToken(userDetail, token, w, r) {
+				return // Redirection already done in Auth().
+			}
+		} else {
+			// Don't store token if it contains refresh token.
+			if !s.Auth(userDetail, w, r) {
+				return // Redirection already done in Auth().
+			}
 		}
 
 		// TODO Check state to determine redirect destination.
@@ -145,6 +153,24 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 	}
 }
 
+func (s *Server) pageVerifyClassroom() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		d := make(map[string]interface{})
+		token := s.ReadToken(w, r)
+		if token == nil {
+			return // Redirection already done in ReadToken.
+		}
+		creds := s.config.ReadGoogleCredentials()
+		if kourses, err := google.FetchCourses(ctx, creds, token); err != nil {
+			d["Error"] = err.Error()
+		} else {
+			d["Titles"] = google.ReadClassroomNames(kourses)
+		}
+		tpl.Render(w, "verify-spreadsheet", d)
+	}
+}
+
 func (s *Server) pageVerifySpreadsheet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -153,7 +179,7 @@ func (s *Server) pageVerifySpreadsheet() http.HandlerFunc {
 		creds := s.config.ReadGoogleCredentials()
 		spreadsheet := "1Mt2AQLBUfZ9ZAmCBP-6X3aFx3RJ5rUmor02iHVI64sU"
 		fmt.Printf("- TokenAdmin: %v\n", s.TokenAdmin)
-		if sheeds, err := google.RetrieveSpreadsheetSheets(ctx, spreadsheet, creds, s.TokenAdmin); err != nil {
+		if sheeds, err := google.FetchSpreadsheetSheets(ctx, spreadsheet, creds, s.TokenAdmin); err != nil {
 			d["Error"] = err.Error()
 		} else {
 			d["Titles"] = google.ReadSheetsTitles(sheeds)
