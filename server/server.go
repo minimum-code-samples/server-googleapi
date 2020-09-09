@@ -127,7 +127,7 @@ func (s *Server) ReadToken(w http.ResponseWriter, r *http.Request) *oauth2.Token
 
 // RedirectError is a helper method to reduce boilerplate code.
 func (s *Server) RedirectError(w http.ResponseWriter, r *http.Request, msg string) {
-	http.Redirect(w, r, model.PathError+"?msg="+msg, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, model.PathError+"?"+model.QueryMsg+"="+msg, http.StatusTemporaryRedirect)
 	// If StatusInternalServerError, shows an ugly "Internal Server Error" page.
 }
 

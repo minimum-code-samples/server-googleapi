@@ -25,10 +25,10 @@ func (s *Server) pageError() http.HandlerFunc {
 		v := r.URL.Query()
 		d := make(map[string]interface{})
 
-		if v.Get("msg") != "" {
-			d["msg"] = v.Get("msg")
+		if v.Get(model.QueryMsg) != "" {
+			d[model.QueryMsg] = v.Get(model.QueryMsg)
 		} else {
-			d["msg"] = "Unknown server error"
+			d[model.QueryMsg] = "Unknown server error"
 		}
 
 		tpl.Render(w, name, d)
@@ -39,10 +39,10 @@ func (s *Server) pageIndex() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := "index"
 		d := make(map[string]interface{})
+		d["HasReadyCredentials"] = s.TokenAdmin != nil
 		if s.IsAuth(r) {
 			d["Authed"] = true
 		} else {
-			d["HasReadyCredentials"] = s.TokenAdmin != nil
 			var (
 				cfg *oauth2.Config
 				err error

@@ -37,6 +37,8 @@ const (
 	// PathVerifySpreadsheet is a temporary endpoint.
 	// TODO Change this.
 	PathVerifySpreadsheet = "/verify-spreadsheet"
+	// QueryMsg is the query parameter specifying the error message.
+	QueryMsg = "msg"
 	// SessName is the session variable for the user's name.
 	SessName = "name"
 	// SessToken is the session variable for the user's access token.

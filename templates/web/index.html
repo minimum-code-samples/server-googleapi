@@ -11,6 +11,12 @@
       <p>
         <a href="/dashboard">Go to dashboard</a>
       </p>
+  {{ if .HasReadyCredentials }}
+      Server is ready.
+      <p>
+        <a href="/verify-spreadsheet">Verify spreadsheet</a>
+      </p>
+  {{ end }}
 {{ else }}
   {{ if .HasReadyCredentials }}
       Server is ready.
