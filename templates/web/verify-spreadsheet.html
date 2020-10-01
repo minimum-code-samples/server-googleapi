@@ -13,13 +13,11 @@
 {{ if .Error }}
     <p>{{ .Error }}</p>
 {{ else }}
-    <ul>
-      {{ range .Titles }}
-        <li>
-          {{ . }}
-        </li>
-      {{ end }}
-    </ul>
+  {{ if .Count }}
+    <p>
+      Count: {{ .Count }}
+    </p>
+  {{ end }}
 {{ end }}
   </body>
 </html>

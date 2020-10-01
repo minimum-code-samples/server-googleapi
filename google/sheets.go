@@ -37,6 +37,20 @@ func FetchSpreadsheetSheets(ctx context.Context, spreadsheetID string, credentia
 	return resp.Sheets, nil
 }
 
+// FetchSpreadsheetValues retrieves all values of a single spreadsheet from Google Sheets.
+func FetchSpreadsheetValues(ctx context.Context, spreadsheetID, sheetName string, credentials []byte, token *oauth2.Token) ([][]interface{}, error) {
+	srv, err := makeSheetsService(ctx, credentials, token)
+	if err != nil {
+		return nil, err
+	}
+	rg := "'" + sheetName + "'!B2:M"
+	resp, err := srv.Spreadsheets.Values.Get(spreadsheetID, rg).Do()
+	if err != nil {
+		return nil, err
+	}
+	return resp.Values, nil
+}
+
 func makeSheetsService(ctx context.Context, credentials []byte, token *oauth2.Token) (*sheets.Service, error) {
 	cfg, err := MakeConfig(credentials, ScopesWithSheets())
 	if err != nil {

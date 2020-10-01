@@ -9,22 +9,30 @@
     <div>
 {{ if .Authed }}
       <p>
-        <a href="/dashboard">Go to dashboard</a>
+        <a href="/verify-spreadsheet">Verify spreadsheet access by access token (session).</a>
       </p>
   {{ if .HasReadyCredentials }}
       Server is ready.
       <p>
-        <a href="/verify-spreadsheet">Verify spreadsheet</a>
+        <a href="/verify-spreadsheet-admin">Verify spreadsheet access by refresh token (file).</a>
       </p>
   {{ end }}
 {{ else }}
   {{ if .HasReadyCredentials }}
       Server is ready.
       <p>
-        <a href="/verify-spreadsheet">Verify spreadsheet</a>
+        <a href="/verify-spreadsheet-admin">Verify spreadsheet access by refresh token (file).</a>
       </p>
   {{ else }}
-      Server is not ready.
+      <p>
+        <strong>Server is not ready.</strong>
+      </p>
+      <p>
+        Seeing this means that there is no refresh token on the server.
+      </p>
+      <p>
+        Signing in now will create the refresh token using your account.
+      </p>
   {{ end }}
   {{ if .UrlUserSignin }}
       <p>

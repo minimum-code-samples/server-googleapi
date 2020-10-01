@@ -43,7 +43,7 @@ func main() {
 	if config.SessionAuthKey == "" {
 		log.Fatal(lg.FatalSessionKeyEmpty)
 	}
-	if config.GoogleApplicationCredentials == "" || !isGoogleCredentialsAvail(config.GoogleApplicationCredentials) {
+	if config.GoogleApplicationCredentials == "" || !isGoogleTokenAvail(config.GoogleApplicationCredentials) {
 		log.Fatal(lg.FatalGACEmpty)
 	}
 
@@ -58,14 +58,6 @@ func main() {
 	}
 	s.MakeRouter(false)
 	runServer(s)
-}
-
-func isGoogleCredentialsAvail(gacPath string) bool {
-	info, err := os.Stat(gacPath)
-	if err != nil {
-		return false
-	}
-	return !info.IsDir()
 }
 
 func isGoogleTokenAvail(gacPath string) bool {

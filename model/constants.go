@@ -15,6 +15,8 @@ const (
 	ErrorSessionSave = "Unable to save to session: %s"
 	// ErrorSessionToken logs when the token cannot be retrieved from the session cookie.
 	ErrorSessionToken = "Corrupted/missing token in session."
+	// ErrorSessionUnauth is the error message for a user who is not signed in.
+	ErrorSessionUnauth = "User not signed in."
 	// ErrorTokenSave is the error message when the saving of the token fails.
 	ErrorTokenSave = "Failed to complete server initialization."
 	// PathDashboard is the user start page.
@@ -25,20 +27,22 @@ const (
 	PathError = "/error"
 	// PathIndex is the home page.
 	PathIndex = "/"
-	// PathInitAdmin is the page to start initialization for the server.
-	PathInitAdmin = "/init-admin"
 	// PathOpenIDCB is the endpoint for the OpenID redirect callback.
 	//
 	// If this needs to be changed, the URI in the Client ID setting (https://console.cloud.google.com/apis/credentials) needs to be updated correspondingly.
 	PathOpenIDCB = "/openidcb"
-	// PathVerifyClassroom is a temporary endpoint.
-	// TODO Change this.
-	PathVerifyClassroom = "/verify-classroom"
 	// PathVerifySpreadsheet is a temporary endpoint.
 	// TODO Change this.
 	PathVerifySpreadsheet = "/verify-spreadsheet"
+	// PathVerifySpreadsheetAdmin is a temporary endpoint.
+	// TODO Change this.
+	PathVerifySpreadsheetAdmin = "/verify-spreadsheet-admin"
 	// QueryMsg is the query parameter specifying the error message.
 	QueryMsg = "msg"
+	// QuerySheetName is the query parameter specifying the name of the sheet to retrieve.
+	QuerySheetName = "sheet-name"
+	// QuerySpreadsheetID is the query parameter specifying the ID of the Google Sheets spreadsheet.
+	QuerySpreadsheetID = "spreadsheet-id"
 	// SessName is the session variable for the user's name.
 	SessName = "name"
 	// SessToken is the session variable for the user's access token.

@@ -44,7 +44,11 @@ func NewServer(cfg Config, store sessions.Store) *Server {
 //
 // Returns true if successful, false otherwise. A false return indicates that a request redirect has happened. The caller should then return immediately.
 func (s *Server) Auth(details *google.UserDetail, w http.ResponseWriter, r *http.Request) bool {
-	sess := s.RedirectIfUnauth(w, r)
+	sess, err := s.SessStore.Get(r, model.SessionName)
+	if err != nil && !sess.IsNew {
+		s.RedirectError(w, r, model.ErrorSessionError)
+		return false
+	} // Else implies it is a new session.
 	if sess == nil {
 		return false
 	}
@@ -60,7 +64,11 @@ func (s *Server) Auth(details *google.UserDetail, w http.ResponseWriter, r *http
 //
 // Returns true if successful, false otherwise. A false return indicates that a request redirect has happened. The caller should then return immediately.
 func (s *Server) AuthToken(details *google.UserDetail, token *oauth2.Token, w http.ResponseWriter, r *http.Request) bool {
-	sess := s.RedirectIfUnauth(w, r)
+	sess, err := s.SessStore.Get(r, model.SessionName)
+	if err != nil && !sess.IsNew {
+		s.RedirectError(w, r, model.ErrorSessionError)
+		return false
+	} // Else implies it is a new session.
 	if sess == nil {
 		return false
 	}
@@ -97,9 +105,6 @@ func (s *Server) MakeRouter(useMiddleware bool) {
 	// if (useMiddleware) {
 	// 	s.Router.Use(middleware.HSTS)
 	// }
-	// Create subrouter for API endpoints.
-	// api := s.Router.PathPrefix("/v1").Subrouter()()
-	// routeAPI(api, s, useMiddleware)
 	routePages(s, useMiddleware)
 	routeStatic(s)
 }
@@ -140,5 +145,9 @@ func (s *Server) RedirectIfUnauth(w http.ResponseWriter, r *http.Request) *sessi
 		s.RedirectError(w, r, model.ErrorSessionError)
 		return nil
 	} // Else implies it is a new session.
+	if len(sess.Values) == 0 {
+		s.RedirectError(w, r, model.ErrorSessionUnauth)
+		return nil
+	}
 	return sess
 }

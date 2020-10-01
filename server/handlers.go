@@ -11,14 +11,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func (s *Server) pageDashboard() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := "dashboard"
-		d := make(map[string]interface{})
-		tpl.Render(w, name, d)
-	}
-}
-
 func (s *Server) pageError() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := "error"
@@ -47,31 +39,19 @@ func (s *Server) pageIndex() http.HandlerFunc {
 				cfg *oauth2.Config
 				err error
 			)
-			if s.TokenAdmin == nil {
-				// Create request for a new refresh token.
-				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
-			} else {
-				cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
-			}
+			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
 			if err != nil {
 				lg.Error(lg.CriticalOauthConfig, err)
 				s.RedirectError(w, r, model.ErrorOauthConstruction)
 				return
 			}
 			if s.TokenAdmin == nil {
+				// Create request for a new refresh token.
 				d["UrlUserSignin"] = google.MakeLinkOffline(cfg, "csrf")
 			} else {
 				d["UrlUserSignin"] = google.MakeLinkOnline(cfg, "csrf")
 			}
 		}
-		tpl.Render(w, name, d)
-	}
-}
-
-func (s *Server) pageInitAdmin() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		name := "init-admin"
-		d := make(map[string]interface{})
 		tpl.Render(w, name, d)
 	}
 }
@@ -82,19 +62,12 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 		ctx := r.Context()
 		queries := r.URL.Query()
 		code := queries.Get("code")
-		state := queries.Get("state")
+		_ = queries.Get("state")
 		var (
 			cfg *oauth2.Config
 			err error
 		)
-		// TODO Check state to determine the scope to exchange token.
-		if state != "" {
-			// Treat this as an admin account.
-			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
-		} else {
-			// Handle as "normal" user.
-			cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithClassroom())
-		}
+		cfg, err = google.MakeConfig(s.config.ReadGoogleCredentials(), google.ScopesWithSheets())
 		if err != nil {
 			lg.Error(lg.CriticalOauthConfig, err)
 			s.RedirectError(w, r, model.ErrorConfigConstruction)
@@ -143,48 +116,45 @@ func (s *Server) pageOpenIDCB() http.HandlerFunc {
 			}
 		}
 
-		// TODO Check state to determine redirect destination.
-		if state != "" {
-			http.Redirect(w, r, model.PathInitAdmin, http.StatusTemporaryRedirect)
+		if token.RefreshToken != "" {
+			// i.e. As an administrator.
+			http.Redirect(w, r, model.PathVerifySpreadsheetAdmin, http.StatusTemporaryRedirect)
 			return
 		}
-		http.Redirect(w, r, model.PathDashboard, http.StatusTemporaryRedirect)
+		http.Redirect(w, r, model.PathVerifySpreadsheet, http.StatusTemporaryRedirect)
 		return
 	}
 }
 
-func (s *Server) pageVerifyClassroom() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		d := make(map[string]interface{})
-		token := s.ReadToken(w, r)
-		if token == nil {
-			return // Redirection already done in ReadToken.
-		}
-		creds := s.config.ReadGoogleCredentials()
-		if kourses, err := google.FetchCourses(ctx, creds, token); err != nil {
-			d["Error"] = err.Error()
-		} else {
-			d["Titles"] = google.ReadClassroomNames(kourses)
-		}
-		tpl.Render(w, "verify-spreadsheet", d)
-	}
-}
-
-func (s *Server) pageVerifySpreadsheet() http.HandlerFunc {
+func (s *Server) pageVerifySpreadsheet(asAdmin bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		name := "verify-spreadsheet"
 		d := make(map[string]interface{})
+
 		creds := s.config.ReadGoogleCredentials()
-		spreadsheet := "1Mt2AQLBUfZ9ZAmCBP-6X3aFx3RJ5rUmor02iHVI64sU"
-		fmt.Printf("- TokenAdmin: %v\n", s.TokenAdmin)
-		if sheeds, err := google.FetchSpreadsheetSheets(ctx, spreadsheet, creds, s.TokenAdmin); err != nil {
-			d["Error"] = err.Error()
+		var tok *oauth2.Token
+		if asAdmin {
+			tok = s.TokenAdmin
 		} else {
-			d["Titles"] = google.ReadSheetsTitles(sheeds)
+			tok = s.ReadToken(w, r)
 		}
 
+		// Get the spreadsheet ID.
+		q := r.URL.Query()
+		sid := q.Get(model.QuerySpreadsheetID)
+		sn := q.Get(model.QuerySheetName)
+		if sid == "" || sn == "" {
+			d["Error"] = fmt.Sprintf("Append query parameters '%s' and '%s'", model.QuerySpreadsheetID, model.QuerySheetName)
+		} else {
+			values, err := google.FetchSpreadsheetValues(ctx, sid, sn, creds, tok)
+			if err != nil {
+				d["Error"] = err.Error()
+			} else {
+				d["Count"] = len(values)
+				fmt.Printf("1st dimension of results is %d long.", len(values))
+			}
+		}
 		tpl.Render(w, name, d)
 	}
 }

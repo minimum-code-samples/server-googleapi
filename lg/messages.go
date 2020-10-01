@@ -7,8 +7,6 @@ const (
 	CriticalOauthDecode = "Unable to decode user info from Oauth token: %s"
 	// CriticalOauthExchange logs when the Oauth exchange process fails.
 	CriticalOauthExchange = "Unable to complete the Oauth token exchange process: %s"
-	// CriticalTokenMarshal logs when marshalling of the token to JSON fails.
-	CriticalTokenMarshal = "JSON marshal of token failed: %s"
 	// CriticalTokenSave logs when saving of the token fails.
 	CriticalTokenSave = "Unable to save token: %s"
 	// FatalConfigParse logs when the config file cannot be parsed.

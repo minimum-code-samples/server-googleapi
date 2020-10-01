@@ -8,7 +8,6 @@ import (
 	oidc "github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/classroom/v1"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -74,11 +73,6 @@ func SaveTokenAsFile(path string, token *oauth2.Token) error {
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 	return nil
-}
-
-// ScopesWithClassroom creates the scopes with the necessary Classroom scopes added.
-func ScopesWithClassroom() []string {
-	return []string{"profile", "email", classroom.ClassroomCoursesReadonlyScope}
 }
 
 // ScopesWithSheets creates the scopes along with readonly access to Google Sheets.
